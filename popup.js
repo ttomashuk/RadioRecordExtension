@@ -25,3 +25,11 @@ window.onload = function() {
         });
     });
 }
+
+$(document).ready(function() {
+    var btn = $(".play-btn");
+    btn.click(function() {
+      btn.toggleClass("paused");
+      return false;
+    });
+  });

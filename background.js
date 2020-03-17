@@ -4,7 +4,8 @@ let currentStation = {
     id:-1,
     title: '',
     artist:'',
-    song:''
+    song:'',
+    qualityStream:''
 };
 
 
@@ -51,12 +52,28 @@ chrome.runtime.onMessage.addListener(
         currentStation.song = nowResponse[currentStation.id].song;
         currentStation.stream_320 = stationList[currentStation.id].stream_320;
 
-        if($('#player').length) {
+        if($('#player').length && $('#player source').prop("src") != currentStation.stream_320) {
             $('#player').remove();    
+        } 
+
+        if(!$('#player').length) {
+            $('body').append('<video id="player" controls="" autoplay="" name="media"><source id="aud" src="'+currentStation.stream_320+'" type="audio/mpeg"></video>');
         }
-        $('body').append('<video id="player" controls="" autoplay="" name="media"><source id="aud" src="'+currentStation.stream_320+'" type="audio/mpeg"></video>');
+
+
         $('#player').on('canplay', function(){
             console.log('canplays');
+            console.log('src='+$('#player source').prop("src"));
+
+            setTimeout(function(){$("video").prop("volume", 0.4)}, 5000);
+            
         })
+
+        $('#player').on('stalled', function(){
+            console.log('stalled');
+            console.log('src='+$('#player source').prop("src"));
+        })
+
+
 
     }

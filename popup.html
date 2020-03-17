@@ -1,30 +1,35 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <link rel="stylesheet" type="text/css" href="popup.css">
         <title>Radio Records</title>
         <style>
-            body {
-                min-width: 200px;
-            }
-            li {
-                list-style-type: none; /* Убираем маркеры */
-            }
-            ul {
-                margin-left: 0; /* Отступ слева в браузере IE и Opera */
-                padding-left: 0; /* Отступ слева в браузере Firefox, Safari, Chrome */
-            }
+            
            </style>
         <script src="jquery.js"></script>
         <script src="popup.js"></script>
     </head>
     <body>
 
-        <h3 id="current_station">
+        <div id="current_station">
             <h4 id="title">Station</h4>
             <p id="artist">Artist</p>
             <p id="song">Song</p>
-        </h3>
+        </div>
+        <div class="controls">
+            <!-- <div class="btn-holder"> -->
+                <button class='play-btn'></button>
+                <div class="loader"></div>
+            <!-- </div> -->
+            <section class="range">
+                <span class="volume"></span>
+                <input type="range" min="0" max="100">
+                <!-- <section class="volume-holder"> -->
+                <!-- </section> -->
+            </section>
+        </div>
 
+        
         <h4>Station List:</h4>
         <ul id="station_list"></ul>
 
