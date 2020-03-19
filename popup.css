@@ -2,11 +2,11 @@ body {
     min-width: 250px;
 }
 li {
-    list-style-type: none; /* Убираем маркеры */
+    list-style-type: none; 
 }
 ul {
-    margin-left: 0; /* Отступ слева в браузере IE и Opera */
-    padding-left: 0; /* Отступ слева в браузере Firefox, Safari, Chrome */
+    margin-left: 0; 
+    padding-left: 0; 
 }
 
 .controls {
@@ -58,7 +58,9 @@ ul {
   }
 
 
-.range {
+
+/* volume-control section */
+#volume-control {
     background: #1ff;
     height: 2rem;
     width: 9rem;
@@ -68,8 +70,6 @@ ul {
     align-items: center;
     justify-content: center;
 }
-    
-
 
 input[type="range"] {
     -webkit-appearance: none;
@@ -104,9 +104,6 @@ input[type="range"]::-webkit-slider-runnable-track {
 input[type="range"]:hover::-webkit-slider-runnable-track {
     background: #ff6e40;
 }
-
-          
-
 
 #volume-btn {
     display: inline-block;

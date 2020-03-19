@@ -1,6 +1,9 @@
 let playerState = {};
 
+let volumeBtn = null;
 let volumeSlider = null;
+
+var mousewheelevt = (/Firefox/i.test(navigator.userAgent)) ? "DOMMouseScroll" : "mousewheel";
 
 function onStationClick(stationId) {
     console.log('onStationClick = '+stationId);
@@ -51,6 +54,9 @@ $(document).ready(function() {
     volumeSlider.on("input", function(event, ui) {
         onVolumeChange(event.target.value);
     });
+    volumeSlider.on("mouseover", function(){
+        volumeSlider.bind(mousewheelevt, moveVolumeSlider);
+    });
 });
 
 function updatePlayerState() {
@@ -85,4 +91,13 @@ function onVolumeChange(volume){
         playerState = state;
         updatePlayerState();
     });
+}
+
+function moveVolumeSlider(e) {
+    if(e.originalEvent.wheelDelta < 0) {
+        onVolumeChange(playerState.volume-10);
+    } else {
+        onVolumeChange(playerState.volume+10);
+    }
+    e.preventDefault();
 }
