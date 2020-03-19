@@ -1,3 +1,7 @@
+let playerState = {};
+
+let volumeSlider = null;
+
 function onStationClick(stationId) {
     console.log('onStationClick = '+stationId);
     
@@ -16,13 +20,18 @@ function updateCurrentStationInfo(currentStation){
 
 window.onload = function() {
     chrome.runtime.sendMessage({msg: "getStationList"}, function(state) {
-        console.log('===='+state.currentStation.id);
+        console.log('getStationList = '+state.currentStation.id);
         updateCurrentStationInfo(state.currentStation);
         
         $(state.stationList).each(function(index) {
             $("#station_list").append('<li id="station_'+index+'"><img src="'+this.icon_png +'" width="20" height="20">' + this.title + '</li>')
             $("#station_"+index).on("click", function(){onStationClick(index);});
         });
+    });
+
+    chrome.runtime.sendMessage({msg:"getPlayerState"}, function(state){
+        playerState = state;
+        updatePlayerState();
     });
 }
 
@@ -32,4 +41,48 @@ $(document).ready(function() {
       btn.toggleClass("paused");
       return false;
     });
-  });
+
+    volumeBtn = $("#volume-btn");
+    volumeBtn.on("click", function(event,ui){
+        toggleVolumeBtn();
+    });
+
+    volumeSlider = $("#volume-slider");
+    volumeSlider.on("input", function(event, ui) {
+        onVolumeChange(event.target.value);
+    });
+});
+
+function updatePlayerState() {
+    if(playerState.isMute) {
+       playerState.volume = 0; 
+    }
+    if(playerState.volume <= 0) { 
+        volumeBtn.css('background-position', '-87px 0');
+    } 
+    else if (playerState.volume <= 25) {
+        volumeBtn.css('background-position', '-58px 0');
+    } 
+    else if (playerState.volume <= 75) {
+        volumeBtn.css('background-position', '-29px 0');
+    } 
+    else {
+        volumeBtn.css('background-position', '0 0');
+    };
+
+    volumeSlider.prop('value', playerState.isMute ? 0 : playerState.volume);
+}
+
+function toggleVolumeBtn(){
+    chrome.runtime.sendMessage({msg:'toggleSound'}, function(state){
+        playerState = state;
+        updatePlayerState();
+    });
+}
+
+function onVolumeChange(volume){
+    chrome.runtime.sendMessage({msg:"volumeChanged", volume: volume}, function(state) {
+        playerState = state;
+        updatePlayerState();
+    });
+}

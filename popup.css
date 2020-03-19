@@ -108,7 +108,7 @@ input[type="range"]:hover::-webkit-slider-runnable-track {
           
 
 
-.volume {
+#volume-btn {
     display: inline-block;
     width: 29px;
     height: 25px;
