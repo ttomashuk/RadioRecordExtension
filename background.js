@@ -52,9 +52,8 @@ chrome.runtime.onMessage.addListener(
                 .catch(error => console.error(error));
         } else if(request.msg == "getPlayerState") {
             sendResponse(playerState);
-        } else if(request.msg == "volumeChanged" && request.volume >= 0 && request.volume <= 100) {
-            playerState.volume = request.volume;
-            updateVolume();
+        } else if(request.msg == "volumeChanged") {
+            updateVolume(request.volume);
             sendResponse(playerState);
         } else if(request.msg == "toggleSound") {
             toggleSound();
@@ -78,37 +77,37 @@ chrome.runtime.onMessage.addListener(
         if(!$('#player').length) {
             $('body').append('<video id="player" controls="" autoplay="" name="media"><source id="aud" src="'+currentStation.stream_320+'" type="audio/mpeg"></video>');
             playerComponent = $("#player");
+            applyPlayerParam();
         }
-
 
         $('#player').on('canplay', function(){
             console.log('canplays');
             console.log('src='+$('#player source').prop("src"));
-
-            // setTimeout(function(){$("#player").prop("volume", 0.4)}, 5000);
-            
         })
 
         $('#player').on('stalled', function(){
             console.log('stalled');
             console.log('src='+$('#player source').prop("src"));
         })
-
-
-
     }
 
 
     function toggleSound() {
         playerState.isMute = !playerState.isMute;
-        if(playerComponent) {
-            playerComponent.prop("muted", playerState.isMute);
-        }
+        applyPlayerParam();
     }
 
-    function updateVolume() {
-        // console.log(' updateVolume:playerState.volume  = ' + playerState.volume);
+    function updateVolume(volume) {
+        if(volume >= 0 && volume <= 100) {
+            playerState.volume = volume;
+            if(playerState.isMute) toggleSound();
+            applyPlayerParam();
+        }
+    }
+    
+    function applyPlayerParam(){
         if(playerComponent) {
+            playerComponent.prop("muted", playerState.isMute);
             playerComponent.prop("volume", playerState.volume/100);
         }
     }

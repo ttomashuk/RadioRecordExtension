@@ -52,7 +52,7 @@ $(document).ready(function() {
 
     volumeSlider = $("#volume-slider");
     volumeSlider.on("input", function(event, ui) {
-        onVolumeChange(event.target.value);
+        onVolumeChange(Number.parseInt(event.target.value));
     });
     volumeSlider.on("mouseover", function(){
         volumeSlider.bind(mousewheelevt, moveVolumeSlider);
@@ -95,9 +95,9 @@ function onVolumeChange(volume){
 
 function moveVolumeSlider(e) {
     if(e.originalEvent.wheelDelta < 0) {
-        onVolumeChange(playerState.volume-10);
+        onVolumeChange(playerState.volume<10?0:playerState.volume-10);
     } else {
-        onVolumeChange(playerState.volume+10);
+        onVolumeChange(playerState.volume>90?100:playerState.volume+10);
     }
     e.preventDefault();
 }
