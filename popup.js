@@ -1,5 +1,6 @@
 let playerState = {};
 
+let playStopBtn = null;
 let volumeBtn = null;
 let volumeSlider = null;
 
@@ -11,7 +12,6 @@ function onStationClick(stationId) {
     chrome.runtime.sendMessage({msg:"onStationClick", stationId: stationId}, function(currentStation){
         updateCurrentStationInfo(currentStation);
     });
-
 }
 
 function updateCurrentStationInfo(currentStation){
@@ -39,10 +39,13 @@ window.onload = function() {
 }
 
 $(document).ready(function() {
-    var btn = $(".play-btn");
-    btn.click(function() {
-      btn.toggleClass("paused");
-      return false;
+    playStopBtn = $("#play-btn");
+    playStopBtn.click(function() {
+        chrome.runtime.sendMessage({msg:"togglePlay"}, function(state){
+            playerState = state;
+            updatePlayerState();
+        });
+    //   return false;
     });
 
     volumeBtn = $("#volume-btn");
@@ -77,6 +80,12 @@ function updatePlayerState() {
     };
 
     volumeSlider.prop('value', playerState.isMute ? 0 : playerState.volume);
+
+    if(playerState.isPlay) {
+        playStopBtn.addClass("paused");
+    } else {
+        playStopBtn.removeClass("paused");
+    }
 }
 
 function toggleVolumeBtn(){

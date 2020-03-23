@@ -58,6 +58,12 @@ chrome.runtime.onMessage.addListener(
         } else if(request.msg == "toggleSound") {
             toggleSound();
             sendResponse(playerState);
+        } else if(request.msg == "togglePlay") {
+            togglePlay();
+            sendResponse(playerState);
+        } else if(request.msg == "stopPlay") {
+            stopPlay();
+            sendResponse(playerState);
         }
 
       return true;
@@ -77,6 +83,7 @@ chrome.runtime.onMessage.addListener(
         if(!$('#player').length) {
             $('body').append('<video id="player" controls="" autoplay="" name="media"><source id="aud" src="'+currentStation.stream_320+'" type="audio/mpeg"></video>');
             playerComponent = $("#player");
+            playerState.isPlay = true;
             applyPlayerParam();
         }
 
@@ -89,6 +96,16 @@ chrome.runtime.onMessage.addListener(
             console.log('stalled');
             console.log('src='+$('#player source').prop("src"));
         })
+    }
+
+    function togglePlay() {
+        playerState.isPlay = !playerState.isPlay;
+        applyPlayerParam();
+    }
+
+    function stopPlay() {
+        playerState.isPlay = false;
+        applyPlayerParam();
     }
 
 
@@ -109,5 +126,12 @@ chrome.runtime.onMessage.addListener(
         if(playerComponent) {
             playerComponent.prop("muted", playerState.isMute);
             playerComponent.prop("volume", playerState.volume/100);
+            if(playerState.isPlay) {
+                playerComponent.trigger("play");
+            } else {
+                // playerComponent.trigger("pause");
+                playerComponent.get(0).pause();
+                playerComponent.get(0).currentTime = 0;;
+            }
         }
     }
