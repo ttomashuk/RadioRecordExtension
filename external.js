@@ -1,0 +1,1 @@
+const PLAYER_STATE = Object.freeze({"PLAY":1, "STOP":2, "PAUSE":3, "LOADING":4, "ERROR":0});

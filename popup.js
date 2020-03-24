@@ -4,7 +4,9 @@ let playStopBtn = null;
 let volumeBtn = null;
 let volumeSlider = null;
 
+
 var mousewheelevt = (/Firefox/i.test(navigator.userAgent)) ? "DOMMouseScroll" : "mousewheel";
+
 
 function onStationClick(stationId) {
     console.log('onStationClick = '+stationId);
@@ -81,10 +83,18 @@ function updatePlayerState() {
 
     volumeSlider.prop('value', playerState.isMute ? 0 : playerState.volume);
 
-    if(playerState.isPlay) {
-        playStopBtn.addClass("paused");
-    } else {
-        playStopBtn.removeClass("paused");
+    switch (playerState.state) {
+        case PLAYER_STATE.PLAY:
+            playStopBtn.addClass("paused");
+            break;
+    
+        case PLAYER_STATE.PAUSE:
+            playStopBtn.removeClass("paused");
+            break;
+    
+        case PLAYER_STATE.STOP:
+            //removePlayer();
+            break;
     }
 }
 
@@ -110,3 +120,19 @@ function moveVolumeSlider(e) {
     }
     e.preventDefault();
 }
+
+
+chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+        console.log(sender.tab ? "from a content script:" + sender.tab.url : "from the extension");
+        console.log('POPUP: request.msg = ' + request.msg);
+
+        if (request.msg == "currentStationInfoChanged") {
+            updateCurrentStationInfo(request.currentStation);
+        } else if(request.msg == "playerStateChanged") {
+            playerState = request.state;
+            updatePlayerState();
+        }
+
+      return true;
+    });
