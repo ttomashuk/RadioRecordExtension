@@ -31,16 +31,16 @@ chrome.runtime.onMessage.addListener(
                 .then(json => {
                     stationList = json.result;
                     sendResponse( { stationList:stationList, 
-                                    currentStation:currentStation });
+                                    currentStation:currentStation,
+                                    playerState: playerState});
                 })
                 .catch(error => console.error(error));
         } else 
         if(request.msg == "onStationClick" && request.stationId >= 0) {
             currentStation.id = request.stationId;
             getPlayNowList().then(()=>{
-                updateCurrentStationInfo();
+                startPlay();
                 sendResponse(currentStation);
-                startPlayNowInterval();
             })
             .catch(error => console.error(error));
         } else if(request.msg == "getPlayerState") {
@@ -54,7 +54,7 @@ chrome.runtime.onMessage.addListener(
         } else if(request.msg == "togglePlay") {
             togglePlay();
             sendResponse(playerState);
-        } else if(request.msg == "stopPlay") {
+        } else if(request.msg == "onStopBtnPressed") {
             stopPlay();
             sendResponse(playerState);
         }
@@ -63,13 +63,15 @@ chrome.runtime.onMessage.addListener(
     });
 
     function updateCurrentStationInfo(){
-        if(currentStation.id < 0) return;
         console.log('updateCurrentStationInfo staionId = ' + currentStation.id);
+        if(currentStation.id < 0) return;
         currentStation.title = stationList[currentStation.id].title;
         currentStation.artist = nowResponse[currentStation.id].artist;
         currentStation.song = nowResponse[currentStation.id].song;
         currentStation.stream_320 = stationList[currentStation.id].stream_320;
+    }
 
+    function startPlay() {
         if($('#player').length && $('#player source').prop("src") != currentStation.stream_320) {
             removePlayer();
         } 
@@ -77,17 +79,18 @@ chrome.runtime.onMessage.addListener(
         if(!$('#player').length) {
             $('body').append('<video id="player" controls="" autoplay="" name="media"><source id="aud" src="'+currentStation.stream_320+'" type="audio/mpeg"></video>');
             playerComponent = $("#player");
-            playerState.state = PLAYER_STATE.PLAY;
+            playerState.state = PLAYER_STATE.LOADING;
             applyPlayerParam();
+            updatePlayerStationView();
+            startPlayNowInterval();
         }
 
-        $('#player').on('canplay', function(){
-            console.log('canplays');
-            console.log('src='+$('#player source').prop("src"));
+        $('#player').on('playing', function(){
             playerState.state = PLAYER_STATE.PLAY;
             updatePlayerStationView();
         })
 
+        updateCurrentStationInfo();
         // $('#player').on('stalled', function(){
         //     console.log('stalled');
         //     console.log('src='+$('#player source').prop("src"));
@@ -96,16 +99,27 @@ chrome.runtime.onMessage.addListener(
 
     function removePlayer() {
         if($('#player').length) {
+            let audio = $('#player').get(0);
+            audio.pause(0);
+            let tmp = audio.src;
+            audio.src = "";
+            audio.load();
             $('#player').remove();    
             playerComponent = null;
+            clearPlayNowInterval();
         } 
     }
 
     function togglePlay() {
+
+        console.log("togglePlay: currentStation.stationId = " + currentStation.id);
+
         if(playerState.state == PLAYER_STATE.PLAY) {
             playerState.state = PLAYER_STATE.PAUSE;
         }else if(playerState.state == PLAYER_STATE.PAUSE) {
             playerState.state = PLAYER_STATE.PLAY;
+        } else if(playerState.state == PLAYER_STATE.STOP) {
+            if(currentStation.id > 0) startPlay();
         }
         applyPlayerParam();
     }
@@ -180,3 +194,12 @@ function updateStationInfoView() {
 function updatePlayerStationView() {
     chrome.runtime.sendMessage({msg:"playerStateChanged", state:playerState});
 }
+
+// chrome.runtime.onConnect.addListener(function (externalPort) {
+//     externalPort.onDisconnect.addListener(function () {
+//       console.log("onDisconnect")
+//       // Do stuff that should happen when popup window closes here
+//     })
+  
+//     console.log("onConnect")
+//   })

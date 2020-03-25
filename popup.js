@@ -1,6 +1,7 @@
 let playerState = {};
 
-let playStopBtn = null;
+let playPauseBtn = null;
+let stopBtn = null;
 let volumeBtn = null;
 let volumeSlider = null;
 
@@ -24,30 +25,29 @@ function updateCurrentStationInfo(currentStation){
 }
 
 window.onload = function() {
-    chrome.runtime.sendMessage({msg: "getStationList"}, function(state) {
-        console.log('getStationList = '+state.currentStation.id);
-        updateCurrentStationInfo(state.currentStation);
+    chrome.runtime.sendMessage({msg: "getStationList"}, function(responce) {
+        console.log('getStationList = '+responce.currentStation.id);
+        updateCurrentStationInfo(responce.currentStation);
+        updatePlayerState(responce.playerState);
         
-        $(state.stationList).each(function(index) {
+        $(responce.stationList).each(function(index) {
             $("#station_list").append('<li id="station_'+index+'"><img src="'+this.icon_png +'" width="20" height="20">' + this.title + '</li>')
             $("#station_"+index).on("click", function(){onStationClick(index);});
         });
     });
 
-    chrome.runtime.sendMessage({msg:"getPlayerState"}, function(state){
-        playerState = state;
-        updatePlayerState();
-    });
+    chrome.runtime.sendMessage({msg:"getPlayerState"}, updatePlayerState);
 }
 
 $(document).ready(function() {
-    playStopBtn = $("#play-btn");
-    playStopBtn.click(function() {
-        chrome.runtime.sendMessage({msg:"togglePlay"}, function(state){
-            playerState = state;
-            updatePlayerState();
-        });
-    //   return false;
+    playPauseBtn = $("#play-btn");
+    playPauseBtn.click(function() {
+        chrome.runtime.sendMessage({msg:"togglePlay"}, updatePlayerState);
+    });
+
+    stopBtn = $('#stop-btn');
+    stopBtn.click(function(){
+        chrome.runtime.sendMessage({msg:'onStopBtnPressed'}, updatePlayerState);
     });
 
     volumeBtn = $("#volume-btn");
@@ -64,7 +64,13 @@ $(document).ready(function() {
     });
 });
 
-function updatePlayerState() {
+function updatePlayerState(state) {
+    if(state) {
+        playerState = state;
+    } else {
+        return;
+    }
+
     if(playerState.isMute) {
        playerState.volume = 0; 
     }
@@ -85,31 +91,33 @@ function updatePlayerState() {
 
     switch (playerState.state) {
         case PLAYER_STATE.PLAY:
-            playStopBtn.addClass("paused");
+            playPauseBtn.addClass("paused");
+            stopBtn.show();
+            $('#loader').hide();
             break;
     
         case PLAYER_STATE.PAUSE:
-            playStopBtn.removeClass("paused");
+            playPauseBtn.removeClass("paused");
             break;
     
+        case PLAYER_STATE.LOADING:
+            stopBtn.hide();
+            $('#loader').show();
+            break;
         case PLAYER_STATE.STOP:
-            //removePlayer();
+            playPauseBtn.removeClass("paused");
+            stopBtn.show();
+            $('#loader').hide();
             break;
     }
 }
 
 function toggleVolumeBtn(){
-    chrome.runtime.sendMessage({msg:'toggleSound'}, function(state){
-        playerState = state;
-        updatePlayerState();
-    });
+    chrome.runtime.sendMessage({msg:'toggleSound'}, updatePlayerState);
 }
 
 function onVolumeChange(volume){
-    chrome.runtime.sendMessage({msg:"volumeChanged", volume: volume}, function(state) {
-        playerState = state;
-        updatePlayerState();
-    });
+    chrome.runtime.sendMessage({msg:"volumeChanged", volume: volume}, updatePlayerState);
 }
 
 function moveVolumeSlider(e) {
@@ -130,9 +138,10 @@ chrome.runtime.onMessage.addListener(
         if (request.msg == "currentStationInfoChanged") {
             updateCurrentStationInfo(request.currentStation);
         } else if(request.msg == "playerStateChanged") {
-            playerState = request.state;
-            updatePlayerState();
+            updatePlayerState(request.state);
         }
 
       return true;
     });
+
+    // var port = chrome.runtime.connect();
