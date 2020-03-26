@@ -1,4 +1,5 @@
 const REFRESH_PLAY_NOW_TIME = 5000; //ms
+const STREAM_STR = 'stream_';
 
 let playerComponent = null;
 
@@ -11,13 +12,14 @@ let currentStation = {
     title: '',
     artist:'',
     song:'',
-    qualityStream:''
+    qualityStreams:[]
 };
 
 let playerState = {
     state: PLAYER_STATE.STOP,
     volume: 50,
-    isMute: false
+    isMute: false,
+    quality: 128
 }
 
 
@@ -57,6 +59,10 @@ chrome.runtime.onMessage.addListener(
         } else if(request.msg == "onStopBtnPressed") {
             stopPlay();
             sendResponse(playerState);
+        } else if(request.msg == "qualityStreamChanged") {
+            qualityStreamChanged(request.quality);
+            startPlay();
+            sendResponse(playerState);
         }
 
       return true;
@@ -65,19 +71,25 @@ chrome.runtime.onMessage.addListener(
     function updateCurrentStationInfo(){
         console.log('updateCurrentStationInfo staionId = ' + currentStation.id);
         if(currentStation.id < 0) return;
+        buildQualityStrimList();
         currentStation.title = stationList[currentStation.id].title;
         currentStation.artist = nowResponse[currentStation.id].artist;
         currentStation.song = nowResponse[currentStation.id].song;
-        currentStation.stream_320 = stationList[currentStation.id].stream_320;
+
+        currentStation.qualityStreams.forEach(qualityStream => {
+            currentStation[''+STREAM_STR+qualityStream] = stationList[currentStation.id][''+STREAM_STR+qualityStream];
+        });
     }
 
     function startPlay() {
-        if($('#player').length && $('#player source').prop("src") != currentStation.stream_320) {
+        updateCurrentStationInfo();
+
+        if($('#player').length && $('#player source').prop("src") != currentStation[STREAM_STR+playerState.quality]) {
             removePlayer();
         } 
 
         if(!$('#player').length) {
-            $('body').append('<video id="player" controls="" autoplay="" name="media"><source id="aud" src="'+currentStation.stream_320+'" type="audio/mpeg"></video>');
+            $('body').append('<video id="player" controls="" autoplay="" name="media"><source id="aud" src="'+currentStation[STREAM_STR+playerState.quality]+'" type="audio/mpeg"></video>');
             playerComponent = $("#player");
             playerState.state = PLAYER_STATE.LOADING;
             applyPlayerParam();
@@ -90,7 +102,6 @@ chrome.runtime.onMessage.addListener(
             updatePlayerStationView();
         })
 
-        updateCurrentStationInfo();
         // $('#player').on('stalled', function(){
         //     console.log('stalled');
         //     console.log('src='+$('#player source').prop("src"));
@@ -127,6 +138,11 @@ chrome.runtime.onMessage.addListener(
     function stopPlay() {
         playerState.state = PLAYER_STATE.STOP;
         applyPlayerParam();
+    }
+
+    function reloadPlayer(){
+        stopPlay();
+        startPlay();
     }
 
 
@@ -193,6 +209,25 @@ function updateStationInfoView() {
 
 function updatePlayerStationView() {
     chrome.runtime.sendMessage({msg:"playerStateChanged", state:playerState});
+}
+
+function buildQualityStrimList() {
+    currentStation.qualityStreams = [];
+    let stInf = stationList[currentStation.id];
+    for(var prop in stInf){
+        if(prop.indexOf(STREAM_STR) > -1) {
+            currentStation.qualityStreams.push(prop.substr(STREAM_STR.length,prop.length));
+        }
+    }
+}
+
+function qualityStreamChanged(quality) {
+    if( currentStation.qualityStreams.find((el)=> {return el == quality;}) ){
+        if(playerState.quality != quality ) {
+            playerState.quality = quality;
+            reloadPlayer();
+        }
+    }
 }
 
 // chrome.runtime.onConnect.addListener(function (externalPort) {

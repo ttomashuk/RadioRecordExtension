@@ -1,9 +1,13 @@
 let playerState = {};
+let currentStation = {};
+
 
 let playPauseBtn = null;
 let stopBtn = null;
 let volumeBtn = null;
+let googleBtn = null;
 let volumeSlider = null;
+let qualitySelect = null;
 
 
 var mousewheelevt = (/Firefox/i.test(navigator.userAgent)) ? "DOMMouseScroll" : "mousewheel";
@@ -17,11 +21,13 @@ function onStationClick(stationId) {
     });
 }
 
-function updateCurrentStationInfo(currentStation){
+function updateCurrentStationInfo(station){
     console.log('--------- updateCurrentStationInfo -------- ');
+    currentStation = station;
     $("#title").html(currentStation.title);
     $("#artist").html(currentStation.artist);
     $("#song").html(currentStation.song);
+    initializeQualitySelect();
 }
 
 window.onload = function() {
@@ -61,6 +67,16 @@ $(document).ready(function() {
     });
     volumeSlider.on("mouseover", function(){
         volumeSlider.bind(mousewheelevt, moveVolumeSlider);
+    });
+
+    qualitySelect = $('#quality-stream');
+    qualitySelect.on("change", function(event){
+        onQualityChange(this.value);
+    });
+
+    googleBtn = $('#google-btn');
+    googleBtn.on('click', function(){
+        chrome.tabs.create({ url: 'https://www.google.com/search?q=' + currentStation.artist + ' '+ currentStation.song });
     });
 });
 
@@ -127,6 +143,18 @@ function moveVolumeSlider(e) {
         onVolumeChange(playerState.volume>90?100:playerState.volume+10);
     }
     e.preventDefault();
+}
+
+function initializeQualitySelect() {
+    qualitySelect.empty();
+    currentStation.qualityStreams.forEach(qs => {
+        qualitySelect.append('<option value="'+qs+'">'+qs+'</option>');
+    });
+    $("#quality-stream [value='"+playerState.quality+"']").attr("selected", "selected");
+}
+
+function onQualityChange(quality){
+    chrome.runtime.sendMessage({msg:"qualityStreamChanged", quality: quality}, updatePlayerState);
 }
 
 
