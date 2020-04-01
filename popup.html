@@ -3,35 +3,34 @@
     <head>
         <link rel="stylesheet" type="text/css" href="popup.css">
         <title>Radio Records</title>
-        <style>
-            
-           </style>
         <script src="jquery.js"></script>
         <script src="external.js"></script>
         <script src="popup.js"></script>
     </head>
     <body>
-
-        <div id="current_station">
-            <h4 id="title">Station</h4>
-            <p id="artist">Artist</p>
-            <p id="song">Song</p>
+        <div class="player">
+            <div id="current_station" class="row">
+                <h4 id="title">Station</h4>
+                <label for="artis">Artist: </label><span id="artist">Artist</span>
+                <label for="song">Song: </label><p id="song">Song</p>
+            </div>
+            <div id="loader" class="row"></div>
+            <div class="controls row">
+                <button id="play-btn"></button>
+                <button id="stop-btn"></button>
+                <button id="google-btn"></button>
+                <select name="quality" id="quality-stream"></select>
+                <section id="volume-control">
+                    <span id="volume-btn"></span>
+                    <input id="volume-slider" type="range" min="0" max="100">
+                </section>
+            </div>
         </div>
-        <div class="controls">
-            <button id="stop-btn"></button>
-            <button id="play-btn"></button>
-            <div id="loader"></div>
-            <select name="quality" id="quality-stream"></select>
-            <section id="volume-control">
-                <span id="volume-btn"></span>
-                <input id="volume-slider" type="range" min="0" max="100">
-            </section>
-            <button id="google-btn"></button>
-        </div>
 
-        
-        <h4>Station List:</h4>
-        <ul id="station_list"></ul>
+        <div class="stations row">
+            <h4>Station List:</h4>
+            <ul id="station-list"></ul>
+        </div>
 
     </body>
 </html>

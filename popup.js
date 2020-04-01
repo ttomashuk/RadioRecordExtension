@@ -37,7 +37,7 @@ window.onload = function() {
         updatePlayerState(responce.playerState);
         
         $(responce.stationList).each(function(index) {
-            $("#station_list").append('<li id="station_'+index+'"><img src="'+this.icon_png +'" width="20" height="20">' + this.title + '</li>')
+            $("#station-list").append('<li id="station_'+index+'"><img src="'+this.icon_png +'" width="20" height="20">' + this.title + '</li>')
             $("#station_"+index).on("click", function(){onStationClick(index);});
         });
     });
@@ -108,7 +108,7 @@ function updatePlayerState(state) {
     switch (playerState.state) {
         case PLAYER_STATE.PLAY:
             playPauseBtn.addClass("paused");
-            stopBtn.show();
+            // stopBtn.show();
             $('#loader').hide();
             break;
     
@@ -117,12 +117,12 @@ function updatePlayerState(state) {
             break;
     
         case PLAYER_STATE.LOADING:
-            stopBtn.hide();
+            // stopBtn.hide();
             $('#loader').show();
             break;
         case PLAYER_STATE.STOP:
             playPauseBtn.removeClass("paused");
-            stopBtn.show();
+            // stopBtn.show();
             $('#loader').hide();
             break;
     }

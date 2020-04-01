@@ -12,7 +12,7 @@ let currentStation = {
     title: '',
     artist:'',
     song:'',
-    qualityStreams:[]
+    qualityStreams:[32, 64, 128, 320]
 };
 
 let playerState = {
@@ -102,10 +102,11 @@ chrome.runtime.onMessage.addListener(
             updatePlayerStationView();
         })
 
-        // $('#player').on('stalled', function(){
-        //     console.log('stalled');
-        //     console.log('src='+$('#player source').prop("src"));
-        // })
+         $('#player').on('stalled', function(){
+            console.log('stalled');
+            console.log('src='+$('#player source').prop("src"));
+            reloadPlayer();
+        })
     }
 
     function removePlayer() {
@@ -200,7 +201,9 @@ function getPlayNowList(){
                     updateCurrentStationInfo();
                     updateStationInfoView();
                 })
-                .catch(error => console.error(error));
+                .catch(error => {
+                    console.error("ERRROR:" + error);
+                });
 }
 
 function updateStationInfoView() {
